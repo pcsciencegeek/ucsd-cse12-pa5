@@ -3,6 +3,7 @@
  * ID: A13102641
  * LOGIN: cs12sci
  */
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.AbstractQueue;
 import java.util.Iterator;
@@ -35,14 +36,19 @@ import java.util.NoSuchElementException;
  * threads modifies the Heap12.
  */
 public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
-    private ArrayList<E> heap;
+    //backing store array
+    private ArrayList<E> backStore;
+    //keeps track how many elements are in the arraylist
+    private int capacity;
+    // boolean that decides if the heap is a min or a max heap * true is max
+    private boolean maxorMin;
     /**
      * 0-argument constructor. Creates an empty Heap12 with capacity of 5
      * elements, and is a min-heap
      */
     public Heap12() {
-        heap = new ArrayList(5);
-
+        backStore = new ArrayList(5);
+        capacity = backStore.size();
     }
 
     /**
@@ -72,6 +78,15 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      * @param toCopy the heap that should be copied
      */
     public Heap12(Heap12<E> toCopy) {
+        //makes a new heap with size of the heap it is going to copy
+        backStore = new ArrayList<E>(toCopy.backStore.size());
+        //TODO keep track of capacity with instance var
+        capacity = toCopy.capacity;
+        //TODO keep track of max with getMax method
+        //copy elements from tocopy into the heap arraylist
+        for( int i = 0; i < toCopy.backStore.size();i++) {
+            backStore.add(i,toCopy.backStore.get(i));
+        }
     }
 
     /* The following are defined "stub" methods that provide degenerate
@@ -85,7 +100,7 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      * @return the number of elements stored in the heap
      */
     public int size() {
-        return this.heap.size();
+        return this.backStore.size();
     }
 
     /**
@@ -99,7 +114,12 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      * @return Element at top of heap. Do not remove
      */
     public E peek() {
-        return (E) null;  // TODO: return the correct top of heap
+        //if array is empty
+        if(backStore.size() <= 0) {
+            throw new NullPointerException("heap is empty");
+        }
+        //return first element
+        return backStore.get(0);
     }
 
     /**
@@ -119,21 +139,45 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      * @throws IllegalArgumentException if some property of the element keeps it from being added.
      */
     public boolean offer(E e) {
+        if (e == null){
+            throw new NullPointerException("Element is null");
+        }
+        if (capacity == backStore.size()){
+            // make new array with double the capacity
+           ArrayList tempBackStore = new ArrayList<E>(backStore.size()*2);
+           //copy
+            for (int i = 0; i < backStore.size(); i++) {
+                tempBackStore.set(i,backStore.get(i));
+            }
+            //assign the temp array back into the original back store
+            backStore = tempBackStore;
+        }
+        // add new element
+        backStore.add(e);
+        // if this is max
+        if (maxorMin) {
+
+        }
+        // the heap is min
+        else {
+
+        }
+
         return true;
     }
 
     /* ------ Private Helper Methods ----*/
      private void trickleDownMax(int indx) {
          int childIndex = 2 * indx + 1;
-         E value = heap.get(indx);
+         E value = backStore.get(indx);
 
-         while (childIndex < heap.size()) {
+         while (childIndex < backStore.size()) {
              // Find the max among the node and all the node's children
              E maxValue = value;
              int maxIndex = -1;
-             for (int i = 0; i < 2 && i + childIndex < heap.size(); i++) {
-                 if (heap.get(i + childIndex).compareTo(maxValue) > 0) {
-                     maxValue = heap.get(i + childIndex);
+             for (int i = 0; i < 2 && i + childIndex < backStore.size(); i++) {
+                 if (backStore.get(i + childIndex).compareTo(maxValue) > 0) {
+                     maxValue = backStore.get(i + childIndex);
                      maxIndex = i + childIndex;
                  }
              }
@@ -142,9 +186,9 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
                  return;
              }
              else {
-                 E temp = heap.get(indx);
-                 heap.set(indx, heap.get(maxIndex));
-                 heap.set(maxIndex,temp);
+                 E temp = backStore.get(indx);
+                 backStore.set(indx, backStore.get(maxIndex));
+                 backStore.set(maxIndex,temp);
                  indx = maxIndex;
                  childIndex = 2 * indx + 1;
              }
@@ -153,13 +197,13 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      private void bubbleUpMax(int indx) {
              while (indx > 0) {
                  int parentIndex = (indx - 1) / 2;
-                 if (0 <= (heap.get(indx).compareTo(heap.get(parentIndex))))
+                 if (0 <= (backStore.get(indx).compareTo(backStore.get(parentIndex))))
                      return;
                  else {
                      //swap
-                     E temp = heap.get(indx);
-                     heap.set(indx, heap.get(parentIndex));
-                     heap.set(parentIndex,temp);
+                     E temp = backStore.get(indx);
+                     backStore.set(indx, backStore.get(parentIndex));
+                     backStore.set(parentIndex,temp);
 
                      indx = parentIndex;
                  }
@@ -167,15 +211,15 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
      }
         private void trickleDownMin(int indx) {
             int childIndex = 2 * indx + 1;
-            E value = heap.get(indx);
+            E value = backStore.get(indx);
 
-            while (childIndex < heap.size()) {
+            while (childIndex < backStore.size()) {
                 // Find the max among the node and all the node's children
                 E maxValue = value;
                 int maxIndex = -1;
-                for (int i = 0; i < 2 && i + childIndex < heap.size(); i++) {
-                    if (heap.get(i + childIndex).compareTo(maxValue) < 0) {
-                        maxValue = heap.get(i + childIndex);
+                for (int i = 0; i < 2 && i + childIndex < backStore.size(); i++) {
+                    if (backStore.get(i + childIndex).compareTo(maxValue) < 0) {
+                        maxValue = backStore.get(i + childIndex);
                         maxIndex = i + childIndex;
                     }
                 }
@@ -184,9 +228,9 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
                     return;
                 }
                 else {
-                    E temp = heap.get(indx);
-                    heap.set(indx, heap.get(maxIndex));
-                    heap.set(maxIndex,temp);
+                    E temp = backStore.get(indx);
+                    backStore.set(indx, backStore.get(maxIndex));
+                    backStore.set(maxIndex,temp);
                     indx = maxIndex;
                     childIndex = 2 * indx + 1;
                 }
@@ -195,18 +239,19 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
         private void bubbleUpMin(int indx) {
             while (indx > 0) {
                 int parentIndex = (indx - 1) / 2;
-                if (0 >= (heap.get(indx).compareTo(heap.get(parentIndex))))
-                    return;
+                if (0 >= (backStore.get(indx).compareTo(backStore.get(parentIndex))))
+                    return ;
                 else {
                     //swap
-                    E temp = heap.get(indx);
-                    heap.set(indx, heap.get(parentIndex));
-                    heap.set(parentIndex,temp);
+                    E temp = backStore.get(indx);
+                    backStore.set(indx, backStore.get(parentIndex));
+                    backStore.set(parentIndex,temp);
 
                     indx = parentIndex;
                 }
             }
         }
+
      // IDK WAT DO?!?
      private void parent(int indx) {
 
@@ -226,7 +271,7 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
         }
 
         public boolean hasNext() {
-            return true; // TODO: change this when code is implmented
+            return true; // TODO: change this when code is implemented
         }
 
         public E next() throws NoSuchElementException {

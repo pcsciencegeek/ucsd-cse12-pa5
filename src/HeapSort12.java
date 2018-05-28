@@ -2,7 +2,7 @@ import java.lang.Comparable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-/** This is a Heap Sort
+/** This is a Heap Sort only 20 lines of code
  *  @author Philip Papadopoulos 
  *  @date 28 April 2014
  */
