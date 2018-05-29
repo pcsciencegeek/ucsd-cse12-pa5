@@ -169,7 +169,7 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
             // make new array with double the capacity
            ArrayList tempBackStore = new ArrayList<E>(backStore.size()*2);
            //copy
-            for (int i = 0; i < backStore.size(); i++) {
+            for (int i = 0; i < backStore.size()-1; i++) {
                 tempBackStore.set(i,backStore.get(i));
             }
             //assign the temp array back into the original back store
@@ -243,17 +243,17 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
 	This is a recommended class name. You may change it**/
     private class Heap12Iterator implements Iterator<E> {
         // create a new Heap12
-        private Heap12<E> copy;
-
+        private ArrayList<E> copy;
         private boolean canRemove;
+        private int cursor;
         /* there are several ways to iterate through a heap,
          * the simplest is breadth-first, which is just through
          * the indices
          */
 
         private Heap12Iterator() {
-            heap.iterator();
-
+            copy = new ArrayList<>();
+            cursor = -1;
         }
 
         /**
@@ -274,9 +274,11 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
          * @throws NoSuchElementException if the iteration has no more elements
          */
         public E next() throws NoSuchElementException {
-            if (!hasNext()) throw new NoSuchElementException();
-
-            return null; //TODO
+            if (!hasNext()) throw new NoSuchElementException("There is no next elem");
+            int current = cursor;
+            E tempData = backStore.get(current);
+            canRemove = true;
+            return tempData; //TODO
         }
 
         /**
@@ -291,7 +293,45 @@ public class Heap12<E extends Comparable<? super E>> extends AbstractQueue<E> {
          * last call to the next method
          */
         public void remove() throws IllegalStateException {
-            // removes the element returned by next
+            // finds the index of the element removed
+            int indexRemoved = findMe(next());
+            // stores the element that is going to be removed
+            E elemRemoved = backStore.get(indexRemoved);
+            //removes the element
+            backStore.remove(next());
+            E toBeMoved = backStore.get(backStore.size()-1);
+            //places last element in the place of the removed elem
+            backStore.set(indexRemoved,backStore.get(backStore.size()-1));
+            //reheapify the array
+            if (normalize(indexRemoved)){
+                bubbleUp(indexRemoved);
+                //move the cursor to the next index
+                cursor = cursor + 1;
+            }
+            //add the removed element to copy
+            copy.add(toBeMoved);
+
+        }
+
+        /**
+         *
+         */
+        private boolean normalize(int movingElem){
+            int percolatedown = sdf;
+            if ()
+        }
+        /**
+         * This is a helper method that find the index of an element
+         * @param lookingFor the element to be searched for
+         * @return the index of the
+         */
+        private int findMe(E lookingFor){
+            for (int i = 0; i < backStore.size()-1; i++) {
+                if (lookingFor == backStore.get(i) ){
+                    return i;
+                }
+            }
+            return -1 ;
         }
     }
 }
